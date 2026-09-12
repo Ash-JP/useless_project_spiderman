@@ -2,11 +2,13 @@
 
 # Spider-Man Web-Shooter 🎯
 
+🎮 **[Play the Live Demo Here!](https://useless-project-spiderman.vercel.app/)** 🎮
+
 ## Basic Details
 ### Team Name: NAHXFAH
 
 ### Team Members
-- Team Lead: Aashray J Pramod
+- Member 1: Aashray J Pramod
 - Member 2: Sreedev SS
 
 ### Project Description
