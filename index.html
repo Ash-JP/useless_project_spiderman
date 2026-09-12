@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Spider-Man Web-Shooter</title>
+    <!-- MediaPipe dependencies via CDN for global access -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+  </head>
+  <body>
+    <div id="app">
+      <!-- Video Element -->
+      <video id="webcam" autoplay playsinline></video>
+      <!-- Game Canvas -->
+      <canvas id="gameCanvas"></canvas>
+      
+      <!-- Start Menu -->
+      <div id="startMenu" class="overlay-screen active">
+        <h1 class="title">SPIDER-MAN<br>WEB-SHOOTER</h1>
+        <p class="subtitle">Defend the city using your webcam!</p>
+        <button id="startBtn" class="primary-btn">START GAME</button>
+      </div>
+
+      <!-- HUD / UI Overlay -->
+      <div id="hud" class="hidden">
+        <div class="hud-top">
+          <div class="score-board">
+            Score: <span id="score">0</span> | Lives: <span id="lives">10</span>
+          </div>
+          <div class="combo-board">
+            Combo: x<span id="combo">1</span>
+          </div>
+        </div>
+        <button id="muteBtn" class="icon-btn">🔊</button>
+        <div class="crosshair" id="crosshair"></div>
+      </div>
+      
+      <!-- Calibration Overlay -->
+      <div id="calibrationOverlay">
+        <h1>Calibration</h1>
+        <p>Perform the Web-Shooter gesture at the 4 targets to calibrate.</p>
+        <div class="target-point top-left" id="target-0">1</div>
+        <div class="target-point top-right" id="target-1">2</div>
+        <div class="target-point bottom-left" id="target-2">3</div>
+        <div class="target-point bottom-right" id="target-3">4</div>
+      </div>
+      
+      <!-- Loading Screen -->
+      <div id="loadingOverlay">
+        <h2>Loading Neural Network...</h2>
+        <div class="spinner"></div>
+      </div>
+    </div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

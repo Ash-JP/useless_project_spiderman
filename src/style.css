@@ -1,0 +1,246 @@
+:root {
+  --primary-color: #ff0000;
+  --secondary-color: #0000ff;
+  --glass-bg: rgba(255, 255, 255, 0.1);
+  --glass-border: rgba(255, 255, 255, 0.2);
+  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Inter', 'Segoe UI', sans-serif;
+}
+
+body, html {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background-color: #111;
+  color: white;
+}
+
+#app {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Video and Canvas Setup */
+#webcam {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scaleX(-1); /* Mirror the video */
+  z-index: 1;
+}
+
+#gameCanvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+  pointer-events: none; /* Let clicks pass through if needed */
+}
+
+/* HUD Overlay */
+#hud {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 3;
+  pointer-events: none;
+}
+
+/* Overlay Screens (Start, Loading, Calibration) */
+.overlay-screen, #calibrationOverlay, #loadingOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  z-index: 10;
+  backdrop-filter: blur(5px);
+  transition: opacity 0.3s;
+}
+
+.title {
+  font-size: 5rem;
+  margin-bottom: 20px;
+  color: white;
+  text-shadow: 0 0 20px #ff0000, 0 0 40px #0000ff;
+  font-weight: 900;
+  letter-spacing: 5px;
+  text-transform: uppercase;
+}
+
+.subtitle {
+  font-size: 1.8rem;
+  margin-bottom: 50px;
+  color: #ccc;
+}
+
+.primary-btn {
+  background: linear-gradient(45deg, #ff0000, #aa0000);
+  color: white;
+  border: 2px solid white;
+  padding: 20px 50px;
+  font-size: 1.5rem;
+  font-weight: bold;
+  border-radius: 50px;
+  cursor: pointer;
+  box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
+  transition: transform 0.2s, box-shadow 0.2s;
+  text-transform: uppercase;
+}
+
+.primary-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 40px rgba(255, 0, 0, 0.8);
+}
+
+.hud-top {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-end;
+}
+
+.score-board, .combo-board {
+  background: var(--glass-bg);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  padding: 15px 30px;
+  border-radius: 12px;
+  font-size: 24px;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  transform: translateZ(0);
+  transition: transform 0.3s ease;
+}
+
+.combo-board {
+  color: #ffeb3b;
+  text-shadow: 0 0 10px rgba(255, 235, 59, 0.5);
+}
+
+.icon-btn {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  background: var(--glass-bg);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--glass-border);
+  color: white;
+  font-size: 1.5rem;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: background 0.3s;
+}
+
+.icon-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Calibration Overlay */
+#calibrationOverlay h1 {
+  font-size: 4rem;
+  margin-bottom: 20px;
+  text-shadow: 0 0 20px rgba(255, 0, 0, 0.8), 0 0 40px rgba(0, 0, 255, 0.8);
+  font-weight: 900;
+}
+
+#calibrationOverlay p {
+  font-size: 1.5rem;
+  max-width: 600px;
+  margin-bottom: 40px;
+}
+
+.target-point {
+  position: absolute;
+  width: 80px;
+  height: 80px;
+  background: radial-gradient(circle, #ff0000 20%, transparent 20%, transparent 40%, #ffffff 40%, #ffffff 60%, transparent 60%, transparent 80%, #ff0000 80%);
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
+  font-size: 24px;
+  color: black;
+  text-shadow: 0 0 5px white;
+  box-shadow: 0 0 20px rgba(255, 0, 0, 0.8);
+  opacity: 0.5;
+  transition: opacity 0.3s, transform 0.3s;
+}
+
+.target-point.active {
+  opacity: 1;
+  transform: scale(1.2);
+  animation: pulse 1s infinite alternate;
+}
+
+@keyframes pulse {
+  0% { box-shadow: 0 0 20px rgba(255, 0, 0, 0.8); }
+  100% { box-shadow: 0 0 40px rgba(255, 0, 0, 1), 0 0 60px rgba(255, 255, 255, 0.8); }
+}
+
+.top-left { top: 10%; left: 10%; }
+.top-right { top: 10%; right: 10%; }
+.bottom-left { bottom: 10%; left: 10%; }
+.bottom-right { bottom: 10%; right: 10%; }
+
+/* Loading Overlay specific tweaks */
+#loadingOverlay {
+  z-index: 15; /* Highest, covers start menu if loading */
+}
+
+.spinner {
+  width: 60px;
+  height: 60px;
+  border: 6px solid var(--glass-border);
+  border-top: 6px solid #ff0000;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-top: 20px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* Custom 3D Villain Targets for Canvas */
+/* Since targets are drawn on canvas, these styles are for reference or if we ever decide to use DOM nodes for enemies */
