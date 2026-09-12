@@ -17,6 +17,8 @@ let lives = 10;
 let isGameOver = false;
 let combo = 1;
 let level = 1;
+let highScore = parseInt(localStorage.getItem('spidermanHighScore')) || 0;
+let hasBeatenHighScoreThisGame = false;
 let lastHitTime = 0;
 let lastSpawnTime = 0;
 let lastFrameTime = performance.now();
@@ -25,6 +27,8 @@ let shakeAmount = 0;
 
 const livesElement = document.getElementById('lives');
 const comboElement = document.getElementById('combo');
+const highScoreElement = document.getElementById('highScoreDisplay');
+if (highScoreElement) highScoreElement.innerText = highScore;
 const startMenu = document.getElementById('startMenu');
 const startBtn = document.getElementById('startBtn');
 const muteBtn = document.getElementById('muteBtn');
@@ -151,6 +155,33 @@ function playSound(type) {
     gain.gain.linearRampToValueAtTime(0.01, now + 0.3);
     osc.start(now);
     osc.stop(now + 0.3);
+  }
+}
+
+function triggerHighScoreCelebration() {
+  const ffaahhSound = new Audio('/ffffaaaahh.mp3'); // User puts their own mp3 in public/
+  if (!isMuted) {
+    ffaahhSound.play().catch(e => console.log('Please place ffffaaaahh.mp3 in the public folder!'));
+  }
+
+  // Giant text decal
+  textDecals.push({
+    x: screenW/2, y: screenH/2, text: `FFFFAAAAHH!`, color: '#ff00ff',
+    life: 4.0, vy: -0.5, size: 100, rotation: (Math.random() - 0.5) * 0.4
+  });
+
+  // Rainbow confetti explosion
+  const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff'];
+  for (let i = 0; i < 150; i++) {
+    particles.push({
+      x: Math.random() * screenW,
+      y: (Math.random() * -screenH) - 50, // Spawn above screen falling down
+      vx: (Math.random() - 0.5) * 6,
+      vy: Math.random() * 5 + 3,
+      life: 6.0,
+      size: Math.random() * 6 + 4,
+      color: colors[Math.floor(Math.random() * colors.length)]
+    });
   }
 }
 
@@ -312,6 +343,19 @@ function fireWeb(screenX, screenY, rawX, rawY) {
 
       score += 10 * combo;
       scoreElement.innerText = score;
+      
+      // High score logic
+      if (score > highScore) {
+          const oldHighScore = highScore;
+          highScore = score;
+          localStorage.setItem('spidermanHighScore', highScore);
+          if (highScoreElement) highScoreElement.innerText = highScore;
+          
+          if (oldHighScore > 0 && !hasBeatenHighScoreThisGame) {
+              hasBeatenHighScoreThisGame = true;
+              triggerHighScoreCelebration();
+          }
+      }
       
       // Level up logic
       if (score >= level * 150) {
@@ -532,10 +576,13 @@ function draw(timestamp) {
     p.y += p.vy * dt;
     p.life -= 0.02 * dt;
     
-    canvasCtx.fillStyle = `rgba(255, 255, 255, ${p.life})`;
+    canvasCtx.save();
+    canvasCtx.globalAlpha = Math.max(0, p.life);
+    canvasCtx.fillStyle = p.color || 'white';
     canvasCtx.beginPath();
     canvasCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
     canvasCtx.fill();
+    canvasCtx.restore();
     
     if (p.life <= 0) {
       particles.splice(i, 1);
