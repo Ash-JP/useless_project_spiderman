@@ -19,6 +19,7 @@ let combo = 1;
 let level = 1;
 let lastHitTime = 0;
 let lastSpawnTime = 0;
+let lastFrameTime = performance.now();
 let isMuted = false;
 let shakeAmount = 0;
 
@@ -422,12 +423,18 @@ function spawnTarget() {
   const imgIndex = Math.floor(Math.random() * villainImages.length);
   
   targets.push({
-    x, y, vx, vy, size, img: villainImages[imgIndex]
+    x, y, vx, size, img: villainImages[imgIndex]
   });
 }
 
 // Main Draw Loop
-function draw() {
+function draw(timestamp) {
+  if (!timestamp) timestamp = performance.now();
+  // Calculate delta time, normalize to 60fps (16.6ms per frame)
+  // Cap at 3.0 (50ms) to prevent huge physics jumps on severe lag spikes
+  const dt = Math.min((timestamp - lastFrameTime) / 16.666, 3.0);
+  lastFrameTime = timestamp;
+
   // Spawn Targets dynamically based on level
   const now = Date.now();
   const spawnInterval = Math.max(500, 2000 - (level * 120));
@@ -472,7 +479,7 @@ function draw() {
     canvasCtx.lineWidth = 5;
     canvasCtx.stroke();
 
-    web.life -= 0.05;
+    web.life -= 0.05 * dt;
     if (web.life <= 0) {
       webLines.splice(i, 1);
     }
@@ -481,8 +488,9 @@ function draw() {
   // Draw Targets
   for (let i = targets.length - 1; i >= 0; i--) {
     const t = targets[i];
-    t.x += t.vx;
-    t.y += Math.sin(Date.now() / 500 + t.x) * 2; // wavy movement
+    t.x += t.vx * dt;
+    // Guaranteed smooth wavy movement based purely on position, not jittery timestamps
+    t.y += Math.sin(t.x * 0.015) * 3 * dt;
     
     // Draw image with 3D shadow effect
     canvasCtx.shadowColor = 'rgba(0,0,0,0.5)';
@@ -520,9 +528,9 @@ function draw() {
   // Draw Particles
   for (let i = particles.length - 1; i >= 0; i--) {
     const p = particles[i];
-    p.x += p.vx;
-    p.y += p.vy;
-    p.life -= 0.02;
+    p.x += p.vx * dt;
+    p.y += p.vy * dt;
+    p.life -= 0.02 * dt;
     
     canvasCtx.fillStyle = `rgba(255, 255, 255, ${p.life})`;
     canvasCtx.beginPath();
@@ -537,8 +545,8 @@ function draw() {
   // Draw Web Decals (Spiderweb falling)
   for (let i = webDecals.length - 1; i >= 0; i--) {
     const d = webDecals[i];
-    d.y += d.vy; // Falling down
-    d.life -= 0.01;
+    d.y += d.vy * dt; // Falling down
+    d.life -= 0.01 * dt;
     
     // Draw a simple spiderweb star pattern
     canvasCtx.strokeStyle = `rgba(255, 255, 255, ${d.life})`;
@@ -566,8 +574,8 @@ function draw() {
   // Increase this number (closer to 1.0) to make the crosshair follow your hand FASTER.
   // Decrease this number (closer to 0.01) to make the crosshair HEAVIER and SLOWER.
   // ---------------------------------------------------------
-  currentHandPos.x += (targetHandPos.x - currentHandPos.x) * 0.15;
-  currentHandPos.y += (targetHandPos.y - currentHandPos.y) * 0.15;
+  currentHandPos.x += (targetHandPos.x - currentHandPos.x) * (0.15 * dt);
+  currentHandPos.y += (targetHandPos.y - currentHandPos.y) * (0.15 * dt);
 
   // Draw Crosshair (Hand Position)
   canvasCtx.beginPath();
@@ -584,8 +592,8 @@ function draw() {
   // Draw Text Decals (Comical hits/misses)
   for (let i = textDecals.length - 1; i >= 0; i--) {
     const d = textDecals[i];
-    d.y += d.vy;
-    d.life -= 0.02;
+    d.y += d.vy * dt;
+    d.life -= 0.02 * dt;
     
     canvasCtx.save();
     canvasCtx.translate(d.x, d.y);
