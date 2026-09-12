@@ -16,7 +16,9 @@ let score = 0;
 let lives = 10;
 let isGameOver = false;
 let combo = 1;
+let level = 1;
 let lastHitTime = 0;
+let lastSpawnTime = 0;
 let isMuted = false;
 let shakeAmount = 0;
 
@@ -309,6 +311,17 @@ function fireWeb(screenX, screenY, rawX, rawY) {
 
       score += 10 * combo;
       scoreElement.innerText = score;
+      
+      // Level up logic
+      if (score >= level * 150) {
+          level++;
+          // Show big LEVEL UP text decal
+          textDecals.push({
+            x: screenW/2, y: screenH/2, text: `LEVEL ${level}`, color: '#00ff00',
+            life: 2.0, vy: -1.0, size: 80, rotation: 0
+          });
+      }
+      
       hit = true;
       break; // Only hit one target per shot
     }
@@ -343,8 +356,7 @@ function finishCalibration() {
   minY -= yPadding;
   maxY += yPadding;
   
-  // Start spawning enemies
-  setInterval(spawnTarget, 2000);
+  // Spawning is now handled dynamically in the draw loop
 }
 
 function addWebLine(startX, startY, endX, endY) {
@@ -401,8 +413,10 @@ function spawnTarget() {
   const x = side === 1 ? -size : screenW + size;
   const y = Math.random() * (screenH * 0.6) + (screenH * 0.1); // Upper 70% of screen
   
-  const vx = side === 1 ? (Math.random() * 3 + 2) : -(Math.random() * 3 + 2);
-  const vy = Math.sin(Date.now() / 1000) * 2; // slight bobbing
+  // Base speed is now faster and scales with level
+  const baseSpeed = Math.random() * 4 + 4 + (level * 1.5);
+  const vx = side === 1 ? baseSpeed : -baseSpeed;
+  const vy = Math.sin(Date.now() / 1000) * 3; // slight bobbing
   
   // Pick random image
   const imgIndex = Math.floor(Math.random() * villainImages.length);
@@ -414,6 +428,14 @@ function spawnTarget() {
 
 // Main Draw Loop
 function draw() {
+  // Spawn Targets dynamically based on level
+  const now = Date.now();
+  const spawnInterval = Math.max(500, 2000 - (level * 120));
+  if (now - lastSpawnTime > spawnInterval && !isCalibrating && !isGameOver) {
+    spawnTarget();
+    lastSpawnTime = now;
+  }
+
   // Clear canvas
   canvasCtx.clearRect(0, 0, screenW, screenH);
   
